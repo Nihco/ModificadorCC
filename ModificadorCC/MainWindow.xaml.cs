@@ -14,6 +14,7 @@ namespace ModificadorCC;
 /// </summary>
 public partial class MainWindow : Window
 {
+    
     public MainWindow()
     {
         InitializeComponent();
@@ -39,17 +40,18 @@ public partial class MainWindow : Window
             var configuration = builder.Build();
             var appSettings = new AppSettings();
             configuration.GetSection("Targetprocess").Bind(appSettings);
-           
+
+            var url = appSettings.url;
             var client = new HttpClient();
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri("https://consalud.tpondemand.com/api/v1/UserStories"),
+                RequestUri = new Uri(url!),
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>()
                 {
                     { "access_token", appSettings.token },
                     { "format", "json" },
-                    {"where",$"(Id eq {idTp})"}
+                    { "where", $"(Id eq {idTp})" }
                 })
             };
             using var response = await client.SendAsync(request);
