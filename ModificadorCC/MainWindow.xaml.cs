@@ -1,20 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Microsoft.Extensions.Configuration;
 
 namespace ModificadorCC;
 
@@ -23,8 +14,6 @@ namespace ModificadorCC;
 /// </summary>
 public partial class MainWindow : Window
 {
-    static HttpClient _client = new HttpClient();
-
     public MainWindow()
     {
         InitializeComponent();
@@ -34,21 +23,41 @@ public partial class MainWindow : Window
     private async void ButtonBase_OnClick(object sender, RoutedEventArgs e)
     {
         string contenidoTextBox = NumeroTpTxt.Text;
-        await CallApi();
+        await CallApi(contenidoTextBox);
     }
 
-    private static async Task<Stream> CallApi()
+    private static async Task<Stream> CallApi(string idTp)
     {
         try
         {
-            _client.BaseAddress = new Uri("https://restapi.tpondemand.com/api/v1/");
-            const string token = "MTAyMjMxOkdoT2xFMHBNWnIxR0JmWTUyNmpUMFdrVWMrM0NEelJIR3VIbEh4KzNYTlk9=";
+            var stackTrace = new StackTrace(new StackFrame(true));
+            var directoryName = Path.GetDirectoryName(stackTrace.GetFrame(0)?.GetFileName());
+
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(directoryName!)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            var configuration = builder.Build();
+            var appSettings = new AppSettings();
+            configuration.GetSection("Targetprocess").Bind(appSettings);
            
-            var response = await _client.GetAsync(
-                $"https://restapi.tpondemand.com/api/v1/UserStories/?access_token={token}");
+            var client = new HttpClient();
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri("https://consalud.tpondemand.com/api/v1/UserStories"),
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>()
+                {
+                    { "access_token", appSettings.token },
+                    { "format", "json" },
+                    {"where",$"(Id eq {idTp})"}
+                })
+            };
+            using var response = await client.SendAsync(request);
             response.EnsureSuccessStatusCode();
-            var responseBody = await response.Content.ReadAsStreamAsync();
-            return responseBody;
+            var body = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(body);
+
+            return null;
         }
         catch (Exception e)
         {
