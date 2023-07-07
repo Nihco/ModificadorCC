@@ -3,9 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using HtmlAgilityPack;
 using Microsoft.Extensions.Configuration;
+using ModificadorCC.Model;
+using ModificadorCC.Service;
+using Newtonsoft.Json;
 
 namespace ModificadorCC;
 
@@ -14,7 +19,6 @@ namespace ModificadorCC;
 /// </summary>
 public partial class MainWindow : Window
 {
-    
     public MainWindow()
     {
         InitializeComponent();
@@ -27,10 +31,11 @@ public partial class MainWindow : Window
         await CallApi(contenidoTextBox);
     }
 
-    private static async Task<Stream> CallApi(string idTp)
+    private static async Task<Root> CallApi(string idTp)
     {
         try
         {
+            if (string.IsNullOrEmpty(idTp)) return new Root();
             var stackTrace = new StackTrace(new StackFrame(true));
             var directoryName = Path.GetDirectoryName(stackTrace.GetFrame(0)?.GetFileName());
 
@@ -41,7 +46,7 @@ public partial class MainWindow : Window
             var appSettings = new AppSettings();
             configuration.GetSection("Targetprocess").Bind(appSettings);
 
-            var url = appSettings.url;
+            var url = appSettings.url+"Generals";
             var client = new HttpClient();
             var request = new HttpRequestMessage
             {
@@ -57,14 +62,33 @@ public partial class MainWindow : Window
             using var response = await client.SendAsync(request);
             response.EnsureSuccessStatusCode();
             var body = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(body);
 
-            return null;
+            var tpModel = JsonConvert.DeserializeObject<Root>(body);
+            foreach (var tp in tpModel.Items)
+            {
+                tp.Description = ConvertHtmlToPlainText(tp.Description);
+            }
+            Excel.Edit(tpModel);
+            return tpModel;
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
             throw;
         }
+        
+    }
+    private static string ConvertHtmlToPlainText(string htmlDescription)
+    {
+        var htmlDoc = new HtmlDocument();
+        htmlDoc.LoadHtml(htmlDescription);
+        var text = htmlDoc.DocumentNode.InnerText;
+        text = HtmlEntity.DeEntitize(text);
+        text = Regex.Replace(text, @"^\s+|\s+$", "", RegexOptions.Multiline);
+        text = Regex.Replace(text, @"[\r\n]{3,}", "\r\n\r\n");
+        text = Regex.Replace(text, @" {2,}", " ");
+        text = text.Replace("\n", "");
+        text = text.Replace("\u200C", "");
+        return text;
     }
 }
