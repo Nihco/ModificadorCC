@@ -10,7 +10,7 @@ public class Excel
 {
     public static void Edit(Root root)
     {
-        FileInfo file = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plantilla", "Plantilla CC.xlsx"));
+        FileInfo file = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plantilla", "PlantillaCC.xlsx"));
         using ExcelPackage excelPackage = new ExcelPackage(file);
         
         ExcelWorkbook excelWorkBook = excelPackage.Workbook;

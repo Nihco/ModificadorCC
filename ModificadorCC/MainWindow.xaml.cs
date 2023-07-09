@@ -46,7 +46,7 @@ public partial class MainWindow : Window
             var appSettings = new AppSettings();
             configuration.GetSection("Targetprocess").Bind(appSettings);
 
-            var url = appSettings.url+"Generals";
+            var url = appSettings.url+"Assignables";
             var client = new HttpClient();
             var request = new HttpRequestMessage
             {
@@ -56,6 +56,7 @@ public partial class MainWindow : Window
                 {
                     { "access_token", appSettings.token },
                     { "format", "json" },
+                    {"include","[Name,Description,CustomFields,Assignments[GeneralUser,Role]]"},
                     { "where", $"(Id eq {idTp})" }
                 })
             };
