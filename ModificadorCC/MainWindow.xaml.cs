@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Configuration;
-using ModificadorCC.Model;
 using ModificadorCC.Service;
 using Newtonsoft.Json;
 

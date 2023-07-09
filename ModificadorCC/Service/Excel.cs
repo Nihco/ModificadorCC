@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using ModificadorCC.Model;
 using OfficeOpenXml;
 
 namespace ModificadorCC.Service;
@@ -15,7 +14,7 @@ public class Excel
         
         ExcelWorkbook excelWorkBook = excelPackage.Workbook;
         ExcelWorksheet excelWorksheet = excelWorkBook.Worksheets.First();
-        var usuarioSolicitante= root.Items[0].CustomFields.FirstOrDefault(x => x.Name == "Usuario Solicitante")!.Value.ToLower();
+        var usuarioSolicitante= root.Items[0].CustomFields.FirstOrDefault(x => x.Name == "Usuario Solicitante")!.Value.ToString()!.ToLower();
         var solicitante=  excelWorksheet.Cells["B7"].Value.ToString()?.ToLower();
         if (usuarioSolicitante != solicitante)
         {
