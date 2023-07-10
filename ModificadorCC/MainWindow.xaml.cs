@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Win32;
 using ModificadorCC.Service;
 using Newtonsoft.Json;
 
@@ -27,10 +28,32 @@ public partial class MainWindow : Window
     private async void ButtonBase_OnClick(object sender, RoutedEventArgs e)
     {
         string contenidoTextBox = NumeroTpTxt.Text;
-        await CallApi(contenidoTextBox);
+        var dlg = new SaveFileDialog
+        {
+            FileName = $"CC-{contenidoTextBox}",
+            DefaultExt = ".xlsx",
+            Filter = "Excel (.xlsx)|*.xlsx"
+        };
+
+        var result = dlg.ShowDialog();
+        if (result == true)
+        {
+            string filename = dlg.FileName;
+            var loadingWindow = new LoadingWindow();
+            loadingWindow.Show();
+            try
+            {
+                await CallApi(contenidoTextBox, filename);
+            }
+            finally
+            {
+
+                loadingWindow.Close();
+            }
+        }
     }
 
-    private static async Task<Root> CallApi(string idTp)
+    private static async Task<Root> CallApi(string idTp,string newPathExcel)
     {
         try
         {
@@ -68,7 +91,7 @@ public partial class MainWindow : Window
             {
                 tp.Description = ConvertHtmlToPlainText(tp.Description);
             }
-            Excel.Edit(tpModel);
+            Excel.Edit(tpModel,newPathExcel);
             return tpModel;
         }
         catch (Exception e)

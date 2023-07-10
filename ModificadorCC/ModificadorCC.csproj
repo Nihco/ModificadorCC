@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="Plantilla\Plantilla CC.xlsx">
+      <None Update="Plantilla\PlantillaCC.xlsx">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>
