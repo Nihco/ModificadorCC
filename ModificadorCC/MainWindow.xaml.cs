@@ -36,24 +36,21 @@ public partial class MainWindow : Window
         };
 
         var result = dlg.ShowDialog();
-        if (result == true)
+        if (result != true) return;
+        string filename = dlg.FileName;
+        var loadingWindow = new LoadingWindow();
+        loadingWindow.Show();
+        try
         {
-            string filename = dlg.FileName;
-            var loadingWindow = new LoadingWindow();
-            loadingWindow.Show();
-            try
-            {
-                await CallApi(contenidoTextBox, filename);
-            }
-            finally
-            {
-
-                loadingWindow.Close();
-            }
+            await CallApi(contenidoTextBox, filename);
+        }
+        finally
+        {
+            loadingWindow.Close();
         }
     }
 
-    private static async Task<Root> CallApi(string idTp,string newPathExcel)
+    private static async Task<Root> CallApi(string idTp, string newPathExcel)
     {
         try
         {
@@ -68,7 +65,7 @@ public partial class MainWindow : Window
             var appSettings = new AppSettings();
             configuration.GetSection("Targetprocess").Bind(appSettings);
 
-            var url = appSettings.url+"Assignables";
+            var url = appSettings.url + "Assignables";
             var client = new HttpClient();
             var request = new HttpRequestMessage
             {
@@ -78,7 +75,7 @@ public partial class MainWindow : Window
                 {
                     { "access_token", appSettings.token },
                     { "format", "json" },
-                    {"include","[Name,Description,CustomFields,Assignments[GeneralUser,Role]]"},
+                    { "include", "[Name,Attachments,Description,CustomFields,Assignments[GeneralUser,Role]]" },
                     { "where", $"(Id eq {idTp})" }
                 })
             };
@@ -87,11 +84,14 @@ public partial class MainWindow : Window
             var body = await response.Content.ReadAsStringAsync();
 
             var tpModel = JsonConvert.DeserializeObject<Root>(body);
-            foreach (var tp in tpModel.Items)
+            foreach (var tp in tpModel!.Items)
             {
                 tp.Description = ConvertHtmlToPlainText(tp.Description);
             }
-            Excel.Edit(tpModel,newPathExcel);
+            
+            
+
+            Excel.Edit(tpModel, newPathExcel);
             return tpModel;
         }
         catch (Exception e)
@@ -99,8 +99,8 @@ public partial class MainWindow : Window
             Console.WriteLine(e);
             throw;
         }
-        
     }
+
     private static string ConvertHtmlToPlainText(string htmlDescription)
     {
         var htmlDoc = new HtmlDocument();

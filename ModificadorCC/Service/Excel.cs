@@ -23,7 +23,8 @@ public class Excel
             excelWorksheet.Cells["B7"].Value = rootItem.CustomFields.FirstOrDefault(x => x.Name == "Usuario Solicitante")?.Value.ToString();
         }
 
-        var solicitanteApi = rootItem.Assignments.Items.FirstOrDefault()?.GeneralUser;
+        var solicitanteApi = rootItem.Assignments.Items.FirstOrDefault(x=>x.Role.Name.Equals("Desarrollador"))?.GeneralUser;
+        var files = rootItem.Attachments.Items.Where(x=>x.Name.Contains("sql")).OrderBy(z=>z.Name).ToList();
         var solicitantedoc = excelWorksheet.Cells["B8"].Value.ToString()?.ToLower();
         var nombreApi = $"{solicitanteApi?.FirstName} {solicitanteApi?.LastName}";
         if (nombreApi != solicitantedoc)
@@ -37,12 +38,20 @@ public class Excel
         var currentDatePlus5Mins = nowPlus5Mins.ToString("dd/MM/yyyy hh:mm");
         excelWorksheet.Cells["B3"].Value = $"CC-{currentDate.Replace("/", "")}-{root.Items.FirstOrDefault()?.Id}";
         excelWorksheet.Cells["B9"].Value = currentDate;
+        excelWorksheet.Cells["B10"].Value = nombreApi;
         excelWorksheet.Cells["D9"].Value = root.Items.FirstOrDefault()?.Id;
         excelWorksheet.Cells["B13"].Value = root.Items.FirstOrDefault()?.Name;
         excelWorksheet.Cells["B14"].Value = root.Items.FirstOrDefault()?.Description;
         excelWorksheet.Cells["B25"].Value = nombreApi;
         excelWorksheet.Cells["B30"].Value = currentDate;
         excelWorksheet.Cells["D30"].Value = nowPlus5Mins.ToString("hh:mm:ss tt");
+        var count = 43;
+        foreach (var fileAttach in files)
+        {
+            excelWorksheet.Cells["C"+count].Value = fileAttach.Name;
+            count += 1;
+        }
+        
         excelWorksheet.Cells["B43"].Value = currentDatePlus5Mins;
         excelWorksheet.Cells["D43"].Value = nombreApi;
         excelWorksheet.Cells["B44"].Value = currentDatePlus5Mins;

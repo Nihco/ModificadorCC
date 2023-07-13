@@ -14,6 +14,8 @@ public class Item
     public EntityType EntityType { get; set; }
     public Project Project { get; set; }
     public Assignments Assignments { get; set; }
+    
+    public Attachments Attachments { get; set; }
     public List<CustomField> CustomFields { get; set; }
 }
 
@@ -34,6 +36,18 @@ public class Process
 {
     public string ResourceType { get; set; }
     public int Id { get; set; }
+}
+
+public class AttachmentItem
+{
+    public string ResourceType { get; set; }
+    public int Id { get; set; }
+    public string Name { get; set; }
+}
+
+public class Attachments
+{
+    public List<AttachmentItem> Items { get; set; }
 }
 
 public class Assignments
